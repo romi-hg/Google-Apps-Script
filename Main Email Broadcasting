@@ -1,0 +1,246 @@
+function onOpen(e){
+  SpreadsheetApp.getUi().createMenu('Menu').addItem('Kirim', 'send').addItem('Reset', 'hapus').addItem('Tutorial', 'tutorial').addItem('Donasi', 'donasi').addToUi();
+}
+
+var sheet = SpreadsheetApp.getActiveSpreadsheet();
+var list = sheet.getSheetByName("List");
+var setting = sheet.getSheetByName("Setting");
+
+function tutorial(){
+  var url = "https://docs.google.com/presentation/d/1ejgAC9iD5OT-hQghJTJWQXx6H8_azQWJ6kVItRrILyo/edit?usp=sharing";
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka file");
+}
+
+function donasi(){
+  var url = "https://rumahamal.org/project";
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka kanal donasi");
+}
+
+function hapus(){
+  var ui = SpreadsheetApp.getUi();
+  var respon = ui.alert('Anda yakin akan mereset data?', SpreadsheetApp.getUi().ButtonSet.YES_NO);
+  var lr = list.getRange("B1").getDataRegion().getLastRow();
+  var sat = setting.getRange('B1:B3').getValues();
+  var dua = setting.getRange('D2').getValue();
+  var tig = setting.getRange('F2').getValue();
+  var tot = [[sat, dua, tig]];
+  if (lr > 1 && respon == ui.Button.YES){
+    list.getRange(2, 2, lr-1, 9).clear();
+    setting.getRange('B1:B3').clearContent();
+    setting.getRange('D2').clearContent();
+    setting.getRange('F2').clearContent();
+    list.getRange('D1:H1').setValues([['{Var1}', '{Var2}', '{Var3}', '{Var4}', '{Var5}']]);
+    ui.alert('Data berhasil direset');
+  } else if (lr == 1 && tot.toString() != ",,,," && respon == ui.Button.YES){
+    setting.getRange('B1:B3').clearContent();
+    setting.getRange('D2').clearContent();
+    setting.getRange('F2').clearContent();
+    list.getRange('D1:H1').setValues([['{Var1}', '{Var2}', '{Var3}', '{Var4}', '{Var5}']]);
+    ui.alert('Data berhasil direset');
+  } else if (lr == 1 && tot.toString() == ",,,," && respon == ui.Button.YES){
+    ui.alert('Belum ada data untuk direset');
+  }
+}
+
+function send(){
+  var pengirim = setting.getRange("B1").getValue();
+  var subjek0 = setting.getRange("B2").getValue();
+  var balasan = setting.getRange("B3").getValue();
+  var urldok = setting.getRange("D2").getValue();
+  var urlimg = setting.getRange("F2").getValue();
+  var var1 = list.getRange("D1").getDisplayValue();
+  var var2 = list.getRange("E1").getDisplayValue();
+  var var3 = list.getRange("F1").getDisplayValue();
+  var var4 = list.getRange("G1").getDisplayValue();
+  var var5 = list.getRange("H1").getDisplayValue();
+  var user = Session.getActiveUser().getEmail();
+  var lr = list.getRange("B1").getDataRegion().getLastRow();
+  if (lr > 1){
+    SpreadsheetApp.getUi().alert('Melakukan pengiriman');
+    var data = list.getRange(2, 2, lr-1, 1).getValues();
+  for (var k = 0; k < data.length; ++k) {
+    var hasilnya = data[k];
+      if (hasilnya == ""){
+      break
+      }
+  }
+  if (k < data.length && urldok != ""){
+    var sampah = DriveApp.createFolder("Sampah Email Broadcasting "+new Date()+"");
+    var arsip = DriveApp.createFolder("Arsip Email Broadcasting "+new Date()+"");
+  }
+  if (balasan == ""){
+    var balaske = user;
+  } else {
+    var balaske = balasan;
+  }
+  var the = "Rekap Pengiriman Email";
+  if (urlimg != ""){
+    var img = DriveApp.getFileById(urlimg.match(/[-\w]{25,}/)).getBlob();
+    var lampimg = {image: img};
+  }
+  if (urlimg == ""){
+    var lampimg = null;
+  }
+  if (pengirim != ""){
+    var nampeng = pengirim;
+  }
+  if (pengirim == ""){
+    var nampeng = null;
+  }
+  var rec = "zakat.engineering@rumahamal.org";
+  for (var i = 0; i < data.length; ++i) {
+    var hasil = data[i];
+    if (hasil == ""){
+      var email = list.getRange(i+2, 3).getValue();
+      var draft = GmailApp.getDraftMessages();
+      for (j = 0; j < draft.length; ++j){
+        var judul = draft[j].getSubject();
+        if (judul == subjek0){
+          var attx = draft[j].getAttachments();
+          var subject = draft[j].getSubject()
+            .replace(var1,list.getRange(i+2, 4).getDisplayValue())
+            .replace(var2,list.getRange(i+2, 5).getDisplayValue())
+            .replace(var3,list.getRange(i+2, 6).getDisplayValue())
+            .replace(var4,list.getRange(i+2, 7).getDisplayValue())
+            .replace(var5,list.getRange(i+2, 8).getDisplayValue());
+          var isi = draft[j].getBody()
+            .replace(var1,list.getRange(i+2, 4).getDisplayValue())
+            .replace(var2,list.getRange(i+2, 5).getDisplayValue())
+            .replace(var3,list.getRange(i+2, 6).getDisplayValue())
+            .replace(var4,list.getRange(i+2, 7).getDisplayValue())
+            .replace(var5,list.getRange(i+2, 8).getDisplayValue())
+            .replace(var1,list.getRange(i+2, 4).getDisplayValue())
+            .replace(var2,list.getRange(i+2, 5).getDisplayValue())
+            .replace(var3,list.getRange(i+2, 6).getDisplayValue())
+            .replace(var4,list.getRange(i+2, 7).getDisplayValue())
+            .replace(var5,list.getRange(i+2, 8).getDisplayValue())
+            .replace(var1,list.getRange(i+2, 4).getDisplayValue())
+            .replace(var2,list.getRange(i+2, 5).getDisplayValue())
+            .replace(var3,list.getRange(i+2, 6).getDisplayValue())
+            .replace(var4,list.getRange(i+2, 7).getDisplayValue())
+            .replace(var5,list.getRange(i+2, 8).getDisplayValue());
+        }
+      }
+      if (urldok != ""){
+        var docname = DriveApp.getFileById(urldok.match(/[-\w]{25,}/)).getName();
+        var mim = DriveApp.getFileById(urldok.match(/[-\w]{25,}/)).getMimeType();
+        if (mim == 'application/vnd.google-apps.document'){
+          var copydoc = DriveApp.getFileById(urldok.match(/[-\w]{25,}/)).makeCopy();
+          var doc = DocumentApp.openById(copydoc.getId());
+          doc.getBody().replaceText(var1,list.getRange(i+2, 4).getDisplayValue());
+          doc.getBody().replaceText(var2,list.getRange(i+2, 5).getDisplayValue());
+          doc.getBody().replaceText(var3,list.getRange(i+2, 6).getDisplayValue());
+          doc.getBody().replaceText(var4,list.getRange(i+2, 7).getDisplayValue());
+          doc.getBody().replaceText(var5,list.getRange(i+2, 8).getDisplayValue());
+          doc.saveAndClose();
+          var pdf = DriveApp.createFile(DriveApp.getFileById(copydoc.getId()).getBlob()).setName(docname+" "+email+".pdf");
+          DriveApp.getFileById(pdf.getId()).moveTo(arsip);
+          DriveApp.getFileById(copydoc.getId()).moveTo(sampah);
+          list.getRange(i+2, 10).setValue(pdf.getUrl());
+        }
+        if (mim == 'application/vnd.google-apps.presentation'){
+          var copysld = DriveApp.getFileById(urldok.match(/[-\w]{25,}/)).makeCopy();
+          var sld = SlidesApp.openById(copysld.getId());
+          var jum = sld.getSlides();
+          for (o = 0; o < jum.length; o++){
+            sld.getSlides()[o].replaceAllText(var1,list.getRange(i+2, 4).getDisplayValue());
+            sld.getSlides()[o].replaceAllText(var2,list.getRange(i+2, 5).getDisplayValue());
+            sld.getSlides()[o].replaceAllText(var3,list.getRange(i+2, 6).getDisplayValue());
+            sld.getSlides()[o].replaceAllText(var4,list.getRange(i+2, 7).getDisplayValue());
+            sld.getSlides()[o].replaceAllText(var5,list.getRange(i+2, 8).getDisplayValue());
+          }
+          sld.saveAndClose();
+          var pdf = DriveApp.createFile(DriveApp.getFileById(copysld.getId()).getBlob()).setName(docname+" "+email+".pdf");
+          DriveApp.getFileById(pdf.getId()).moveTo(arsip);
+          DriveApp.getFileById(copysld.getId()).moveTo(sampah);
+          list.getRange(i+2, 10).setValue(pdf.getUrl());
+        }
+      }
+      if (urldok != "" && attx != null){
+        var lampr = attx.concat(pdf);
+      }
+      if (urldok == "" && attx != null){
+        var lampr = attx;
+      }
+      if (urldok != "" && attx == null){
+        var lampr = pdf;
+      }
+      if (urldok == "" && attx == null){
+        var lampr = null;
+      }
+      GmailApp.sendEmail(email, subject, "Assalaamu'alaikum!", {
+          name : nampeng,
+          attachments: lampr,
+          replyTo : balaske,
+          inlineImages: lampimg,
+          htmlBody: isi +'<br /><br /><img src="cid:image" width="100%" />',
+          });
+      list.getRange(i+2, 2).setValue(new Date());
+      list.getRange(i+2, 9).setValue(MailApp.getRemainingDailyQuota());
+    }
+  }
+  list.getRange('B:B').setNumberFormat('dd/MM/yyyy H:mm:ss');
+  if (k < data.length && urldok != ""){
+    DriveApp.getFolderById(sampah.getId()).setTrashed(true);
+  }
+
+  if (urldok != ""){
+    var docname = DriveApp.getFileById(urldok.match(/[-\w]{25,}/)).getName();
+    var docatt = DriveApp.createFile(DriveApp.getFileById(urldok.match(/[-\w]{25,}/)).getBlob()).getAs('application/pdf').setName(docname+".pdf");
+  }
+  if (urldok != "" && attx != null){
+    var lamp = attx.concat(docatt);
+  }
+  if (urldok == "" && attx != null){
+    var lamp = attx;
+  }
+  if (urldok != "" && attx == null){
+    var lamp = docatt;
+  }
+  if (urldok == "" && attx == null){
+    var lamp = null;
+  }
+  var jumlah = lr-1;
+  var penerima = list.getRange(2, 3, lr-1, 1).getValues();
+  GmailApp.sendEmail(rec, the, "", {
+    attachments: lamp,
+    inlineImages: lampimg,
+    htmlBody: '<b>Akun pengguna:</b> '+user+'<br /><br /><b>Jumlah alamat:</b> '+jumlah+'<br /><br /><b>Isi email:</b><br />'+isi+'<br /><br /><b>Penerima:</b><br />'+penerima+'<br /><br /><img src="cid:image" width="100%" />',
+    });
+  GmailApp.search('subject:'+the+'',0,1)[0].moveToTrash();
+  SpreadsheetApp.getUi().alert('Pengiriman selesai');
+  } else {
+    SpreadsheetApp.getUi().alert('Belum ada data');
+  }
+  list.getRange('B2:B').setNumberFormat('dd/MM/yyyy H:mm:ss');
+  list.getRange('B1').getDataRegion().setFontFamily('Calibri');
+}
+
+function onEdit(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var credit = sheet.getSheetByName("Credit");
+  credit.getRange("A1").setValue("Aplikasi ini dikembangkan oleh Romi Hardiansyah, amil zakat di Rumah Amal Salman.");
+  credit.getRange("A2").setValue("Aplikasi ini akan terus diperbaharui sesuai dengan kebutuhan.");
+  credit.getRange("A3").setValue("Semoga dengan keridhaan Allah.");
+  credit.getRange("A10").setValue("Rumah Amal Salman");
+  credit.getRange("A11").setValue("Jalan Gelap Nyawang Nomor 4, Lebak Siliwangi, Coblong, Kota Bandung");
+  credit.getRange("A12").setValue("+62 811-2228-333");
+  credit.getRange("A13").setValue("www.rumahamal.org");
+  credit.getRange("A5").setValue("Romi Hardiansyah");
+  credit.getRange("A6").setValue("t.me/karom_hg");
+  credit.getRange("A7").setValue("romi@rumahamal.org");
+  credit.getRange("A8").setValue("+62 852-8423-9760");
+  credit.getRange("A15:C15").setValues([["Versi","Tanggal","Pembaharuan"]]);
+  credit.getRange("A16:C16").setValues([["Versi 1.0","28/12/2020","Sistem pertama kali dipublikasikan."]]);
+  credit.getRange("A17:C17").setValues([["Versi 1.1","28/03/2021","Penambahan berkas lampiran email tidak lagi dibatasi 1 berkas."]]);
+  credit.getRange("A18:C18").setValues([["Versi 1.2","27/04/2021","Penambahan Google Slides untuk pengiriman dokumen personal."]]);
+
+  credit.getRange("A15:C15").setFontWeight("bold").setHorizontalAlignment("center");
+  credit.getRange("A9").setFontWeight("bold");
+  var img = DriveApp.getFileById("1EwV-ICKyDjclvzD9fTjtGbavCEgw_B_W");
+  //credit.insertImage(img,7,1);
+}
