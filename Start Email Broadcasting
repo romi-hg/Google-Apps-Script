@@ -1,0 +1,61 @@
+function onOpen(e){
+  SpreadsheetApp.getUi().createMenu('Menu').addItem('Mulai', 'pasbuka').addItem('Tutorial', 'tutorial').addItem('Donasi', 'donasi').addToUi();
+}
+
+function pasbuka() {
+  var ui = SpreadsheetApp.getUi();
+  var respon = ui.alert('Apakah Anda akan melakukan pengiriman email?', ui.ButtonSet.YES_NO);
+  if (respon == ui.Button.YES){
+    siapkan();
+  } else {
+    ui.alert("Anda dapat melakukan pengiriman email dengan menekan tombol 'Lakukan Pengiriman'.");
+  }
+}
+
+function tutorial(){
+  var url = "https://docs.google.com/presentation/d/1ejgAC9iD5OT-hQghJTJWQXx6H8_azQWJ6kVItRrILyo/edit?usp=sharing";
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka file");
+}
+
+function donasi(){
+  var url = "https://rumahamal.org/project";
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka kanal donasi");
+}
+
+function siapkan(){
+  var user = Session.getActiveUser().getEmail();
+  var copysheet = DriveApp.getFileById("1ujFlNUIHVgVOyAYwzXm-TC7_sdJVx-nlqObR9omgwQ0").makeCopy("Email Broadcasting Apps "+user+"");
+  var url = copysheet.getUrl();
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka file");
+}
+
+function onEdit(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var credit = sheet.getSheetByName("Credit");
+  credit.getRange("A1").setValue("Aplikasi ini dikembangkan oleh Romi Hardiansyah, amil zakat di Rumah Amal Salman.");
+  credit.getRange("A2").setValue("Aplikasi ini akan terus diperbaharui sesuai dengan kebutuhan.");
+  credit.getRange("A3").setValue("Semoga dengan keridhaan Allah.");
+  credit.getRange("A10").setValue("Rumah Amal Salman");
+  credit.getRange("A11").setValue("Jalan Gelap Nyawang Nomor 4, Lebak Siliwangi, Coblong, Kota Bandung");
+  credit.getRange("A12").setValue("+62 811-2228-333");
+  credit.getRange("A13").setValue("www.rumahamal.org");
+  credit.getRange("A5").setValue("Romi Hardiansyah");
+  credit.getRange("A6").setValue("t.me/karom_hg");
+  credit.getRange("A7").setValue("romi@rumahamal.org");
+  credit.getRange("A8").setValue("+62 852-8423-9760");
+  credit.getRange("A15:C15").setValues([["Versi","Tanggal","Pembaharuan"]]);
+  credit.getRange("A16:C16").setValues([["Versi 1.0","28/12/2020","Sistem pertama kali dipublikasikan."]]);
+  credit.getRange("A17:C17").setValues([["Versi 1.1","28/03/2021","Penambahan berkas lampiran email tidak lagi dibatasi 1 berkas."]]);
+  credit.getRange("A18:C18").setValues([["Versi 1.2","27/04/2021","Penambahan Google Slides untuk pengiriman dokumen personal."]]);
+
+  credit.getRange("A15:C15").setFontWeight("bold").setHorizontalAlignment("center");
+  credit.getRange("A9").setFontWeight("bold");
+  var img = DriveApp.getFileById("1EwV-ICKyDjclvzD9fTjtGbavCEgw_B_W");
+  //credit.insertImage(img,7,1);
+}
