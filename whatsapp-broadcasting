@@ -1,0 +1,49 @@
+/*
+I used alatwa.com to send the message (WhatsApp) automatically.
+I stored the contact in Google Spreadsheet. So, I make the system get the contact and broadcast the message to the contact automatically every minute.
+I set it to send only 5 messages per minute (this is a tip to avoid blocking from WhatsApp [but I can't guarantee about it]).
+If you want to subscribe to alatwa.com, please use my referral code: ras113
+
+After write the code, I also use trigger by time to execute the code automatically.
+*/
+
+function send_message_automatically(){
+  var sheet = SpreadsheetApp.openById('xxxxxxxxxxxxxxxxxxxxx'); //you can replace it with your own
+  var zn = sheet.getSheetByName('Sheet1');
+
+  var apikey = "xxxxxxxxxxxxxxxxxxxxxxxxxxx"; //you can replace it with your own after you subscribe to alatwa.com
+
+  var lz = zn.getRange('A1').getDataRegion().getLastRow();
+  var data = zn.getRange(2, 25, lz-1, 1).getValues(); //I used column Y as controller. When column Y is blank, the system will get the contact and send the message to it
+  var j = 0;
+  for (i = 0; i < data.length; i++){
+    if (data[i] == '' && j < 5){ //I set it to send only 5 messages per minute
+      var kontak = zn.getRange(i+2, 12).getValue(); //I got the contact here
+      var url = "https://app.alatwa.com/api/send/message/media";
+      var options = {
+        "method": "post",
+        "headers": {
+          "Authorization": apikey,
+          "Content-Type": "application/json"
+        },
+        "payload": JSON.stringify({
+          "device": "0812xxxxxxx",
+          "phone": kontak,
+          "message": "_Assalamu 'alaikum.._ 🙏😊\n\nBapak/Ibu yang dirahmati Allah..", //the message that will be sent
+          "url": "https://app.rumahamal.org/storage/assets/salman/crowdfunding/dGYmvHKdXieS2KSGaBqK1VraG4otqnrWwhaDfXLQ.jpeg" //the image that will be sent
+        }),
+        "muteHttpExceptions": true
+      };
+      var response = UrlFetchApp.fetch(url, options);
+      var kodres = response.getResponseCode();
+      
+      if (kodres == 201){ //if message sending is successful, the response code is 201 and system will write the timestamp in column Y
+        zn.getRange(i+2, 26).setValue(new Date());
+      } else {
+        zn.getRange(i+2, 26).setValue('Skip');
+      }
+      Logger.log(an);
+      j++;
+    }
+  }
+}
