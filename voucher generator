@@ -1,0 +1,381 @@
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+function onOpen(){
+  SpreadsheetApp.getUi().createMenu('Menu').addItem('Buat voucher satuan', 'generate').addItem('Buat voucher kolektif', 'kolektif').addItem('Buat kode', 'buatkode').addItem('Tutorial', 'tutorial').addItem('Donasi', 'donasi').addToUi();
+  credit();
+}
+
+function tutorial(){
+  var url = "https://www.youtube.com/playlist?list=PLa3Gv-6OCsu8aH_5jDBxFD50MC6PL-WO-";
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka Youtube");
+}
+
+function donasi(){
+  var url = "https://sheet.rumahamal.org/donasi";
+  var html = "<script>window.open('"+url+"', '_blank');google.script.host.close();</script>";
+  var userInterface = HtmlService.createHtmlOutput(html);
+  SpreadsheetApp.getUi().showModalDialog(userInterface, "Membuka formulir donasi");
+}
+
+function credit(){
+  var js = ss.getSheets();
+  var ls = [];
+  for (n = 0; n < js.length; n++){
+    if (js[n].getName() == 'Credit'){
+      ls.push(1);
+    }
+  }
+  if (ls.toString() < 1){
+    ss.insertSheet('Credit');
+  }
+
+  var cr = ss.getSheetByName('Credit');
+  cr.getRange('A1:C13').setValues([
+    ['Aplikasi ini dikembangkan oleh Romi Hardiansyah.', '', ''],
+    ['Aplikasi ini akan terus diperbaharui sesuai dengan kebutuhan.', '', ''],
+    ['Semoga dengan keridhaan Allah.', '', ''],
+    ['', '', ''],
+    ['Romi Hardiansyah', '', ''],
+    ['Telegram',	't.me/karom_hg', ''],
+    ['Email',	'romi@rumahamal.org', ''],
+    ['WhatsApp',	'wa.me/6285284239760', ''],
+    ['', '', ''],
+    ['', '', ''],
+    ['Versi',	'Tanggal',	'Pembaharuan'],
+    ['Versi 1.0',	'03/01/2022',	'Sistem pertama kali dipublikasikan.'],
+    ['Versi 1.1',	'15/07/2022',	'Penambahan fitur hasil dalam bentuk PDF.']
+  ]);
+  cr.getRange('A:C').setFontFamily('Calibri');
+  cr.getRange('A5').setFontWeight('bold');
+  cr.getRange('A11:C11').setFontWeight('bold').setHorizontalAlignment('center');
+}
+
+function buatkode() {
+  var js = ss.getSheets();
+  var ls = [];
+  for (n = 0; n < js.length; n++){
+    if (js[n].getName() == 'Kode'){
+      ls.push(1);
+    }
+  }
+
+  if (ls.toString() < 1){
+    SpreadsheetApp.getUi().alert("Sheet 'Kode' tidak ditemukan!");
+  } else {
+    var ode = ss.getSheetByName('Kode');
+    ode.getRange('A4:B').clear();
+    ode.getRange('D1:D').setFontColor('red');
+    var jum = ode.getRange('B1').getValue();
+    if (jum > 0){
+      var lo = 0;
+      while (lo != jum){
+        for (i = 0; i < jum; i++){
+          ode.getRange(i+4, 1, 1, 2).setValues([[
+            i+1,
+            '=RANDBETWEEN(100;999)&char(RANDBETWEEN(65;90))&char(RANDBETWEEN(65;90))&char(RANDBETWEEN(65;90))'
+          ]]);
+        }
+        ode.getRange('D1').setValue('=UNIQUE(B4:B)');
+        var lo = ode.getRange('D1').getDataRegion().getLastRow();
+        ode.getRange('D1:D').setFontColor('red');
+      }
+    }
+    ode.getRange('D1').getDataRegion().copyValuesToRange(ode, 2, 2, 4, jum+3);
+    ode.getRange('D1').getDataRegion().clear();
+    ode.getRange('D1:D').setBackground('red');
+    ode.getRange('A3').getDataRegion().setFontFamily('Calibri');
+    ode.getRange('A3:A').setHorizontalAlignment('center');
+  }
+}
+
+function kolektif(){
+  var js = ss.getSheets();
+  var ls = [];
+  for (n = 0; n < js.length; n++){
+    if (js[n].getName() == 'Kolektif'){
+      ls.push(1);
+    }
+  }
+
+  if (ls.toString() < 1){
+    SpreadsheetApp.getUi().alert("Sheet 'Kolektif' tidak ditemukan!");
+  } else {
+    var kol = ss.getSheetByName('Kolektif');
+    var idf = kol.getRange('B1').getValue().match(/[-\w]{25,}/).toString();
+    var lgs = kol.getRange('B2').getValue().toString();
+
+    try {
+      var folder_name = DriveApp.getFolderById(idf);
+    } catch(err) {
+      var folder_name = err.message;
+    }
+    if (folder_name == 'Unexpected error while getting the method or property getFolderById on object DriveApp.'){
+      SpreadsheetApp.getUi().alert("Folder tidak ditemukan!");
+    } else if (folder_name == 'No item with the given ID could be found. Possibly because you have not edited this item or you do not have permission to access it.'){
+      SpreadsheetApp.getUi().alert("Anda tidak memiliki akses ke folder ini!");
+    } else {
+      cekslide();
+    }
+
+    function cekslide() {
+      try {
+        var slide_name = SlidesApp.openByUrl(lgs).getName();
+      } catch(err) {
+        var slide_name = err.message;
+      }
+      if (slide_name == 'Not found'){
+        SpreadsheetApp.getUi().alert("Google Slide tidak ditemukan!");
+      } else if (slide_name == 'Action not allowed'){
+        SpreadsheetApp.getUi().alert("Anda tidak memiliki akses ke Google Slide ini!");
+      } else {
+        cekbentuk();
+      }
+    }
+
+    function cekbentuk(){
+      var btk = kol.getRange('E1').getValue();
+      if (btk == ''){
+        SpreadsheetApp.getUi().alert("Anda belum memilih bentuk kupon yang akan dihasilkan.");
+      } else {
+        cekjumlah();
+      }
+    }
+
+    function cekjumlah(){
+      var jum = kol.getRange('E2').getValue();
+      if (isFinite(jum) && jum > 1){
+        buatsatuan();
+      } else if (jum == ''){
+        SpreadsheetApp.getUi().alert("Anda belum memasukkan jumlah voucher.");
+      } else {
+        SpreadsheetApp.getUi().alert("Jumlah voucher yang Anda masukkan tidak valid.");
+      }
+    }
+
+    function buatsatuan(){
+      var ims = lgs.slice(lgs.search('https://docs.google.com/presentation/d/')+39, lgs.search('/edit#slide=id.'));
+      var idp = lgs.slice(lgs.search('slide=id.')+9, lgs.length);
+      var jum = kol.getRange('E2').getValue();
+      var kod = kol.getRange('R1').getValue();
+      var var1 = kol.getRange('S1').getValue();
+      var var2 = kol.getRange('T1').getValue();
+      var var3 = kol.getRange('U1').getValue();
+      var var4 = kol.getRange('V1').getValue();
+      kol.getRange('G2').setValue('=MINIFS(C5:C;F5:F;"")');
+      kol.getRange('J1:N1').setValues([['=R1', '=S1', '=T1', 'U1', 'V1']]);
+      kol.getRange('I2:J2').setValues([[
+        '=if(and(row()-1<=E$2;LEN(E$2)=2;len(row()-1)=1);CONCATENATE("0";row()-1);IF(or(and(row()-1<=E$2;LEN(E$2)=2;len(row()-1)=2);and(row()-1<=E$2;LEN(E$2)=1));row()-1;))',
+        '=iferror(FILTER(R:V;Q:Q>(G2-1)*E2;Q:Q<=E2*G2);)'
+      ]]);
+      kol.getRange('I2').copyTo(kol.getRange(2, 9, jum));
+      var lm = kol.getRange('Q1').getDataRegion().getLastRow();
+      if (lm > 1){
+        kol.getRange('Q2').setValue('=IF(R2<>"";row()-1;)');
+        kol.getRange('Q2').copyTo(kol.getRange(2, 17, lm-1));
+      }
+      var lr = kol.getRange('A4').getDataRegion().getLastRow();
+      Logger.log(jum*(lr-4) <= lm-1);
+      if (lr > 4 && jum*(lr-4) <= lm-1){
+        kol.getRange('C5:D5').setValues([[
+          '=if(A5<>"";row()-4;)',
+          '=IF(C5="";"";IF(len(MAX($C$5:C))-LEN(C5)=0;C5;IF(len(MAX($C$5:C))-LEN(C5)=1;CONCATENATE("0";C5);IF(len(MAX($C$5:C))-LEN(C5)=2;CONCATENATE("00";C5);IF(len(MAX($C$5:C))-LEN(C5)=3;CONCATENATE("000";C5);IF(len(MAX($C$5:C))-LEN(C5)=4;CONCATENATE("0000";C5);))))))'
+        ]]);
+        kol.getRange('C5:D5').copyTo(kol.getRange(5, 3, lr-4, 2));
+        var data = kol.getRange(5, 6, lr-4, 1).getValues();
+        for (i = 0; i < data.length; i++){
+          var hasil = data[i];
+          if (hasil == ''){
+            var nama = kol.getRange(i+5, 1).getDisplayValue();
+            var ut = kol.getRange(i+5, 4).getDisplayValue();
+            var newf = DriveApp.getFolderById(idf).createFolder(ut + " " + nama);
+            DriveApp.getFolderById(newf.getId()).setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+            
+            var datst = kol.getRange(2, 15, jum, 1).getValues();
+            for (j = 0; j < datst.length; j++){
+              var hasst = datst[j];
+              if (hasst == ''){
+                var main = kol.getRange(j+2, 9, 1, 6).getDisplayValues();
+                var no = main[0][0];
+                var kode = main[0][1];
+                var isi1 = main[0][2];
+                var isi2 = main[0][3];
+                var isi3 = main[0][4];
+                var isi4 = main[0][5];
+                var ids = DriveApp.getFileById(ims).makeCopy().getId();
+                var js = SlidesApp.openById(ids).getSlides()[0].getShapes();
+                for (s = 0; s < js.length; s++){
+                  js[s].getText().replaceAllText(kod, kode);
+                  js[s].getText().replaceAllText(var1, isi1);
+                  js[s].getText().replaceAllText(var2, isi2);
+                  js[s].getText().replaceAllText(var3, isi3);
+                  js[s].getText().replaceAllText(var4, isi4);
+                }
+                SlidesApp.openById(ids).saveAndClose();
+
+                var btk = kol.getRange('E1').getValue();
+                if (btk == 'PNG'){
+                  var url = "https://slides.googleapis.com/v1/presentations/" + ids + "/pages/" + idp + "/thumbnail";
+                  var parameters = {
+                    method: "GET",
+                    headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
+                    contentType: "application/json",
+                    muteHttpExceptions: true
+                  };
+                  var cek = UrlFetchApp.fetch(url, parameters);
+                  var response = JSON.parse(cek);
+                  var blob = UrlFetchApp.fetch(response.contentUrl).getBlob();
+                  var fi = DriveApp.getFolderById(idf).createFile(blob).setName(ut + no + " " + kode + ".png").setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+                } else {
+                  var blob = DriveApp.getFileById(ids).getBlob().getAs('application/pdf');
+                  var fi = DriveApp.createFile(blob).setName(ut + no + " " + kode + ".pdf").setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+                }
+                fi.moveTo(newf);
+                kol.getRange(j+2, 15).setValue('Sudah');
+                DriveApp.getFileById(ids).setTrashed(true);
+              }
+            }
+            kol.getRange('O2:O').clear();
+            kol.getRange(i+5, 5, 1, 2).setValues([[new Date(), newf.getUrl()]]);
+          }
+        }
+        rep('Kolektif', +i+1, fi.getUrl());
+      } else if (jum*(lr-4) > lm-1){
+        SpreadsheetApp.getUi().alert("Jumlah voucher tidak mencukupi.");
+      } else if (lr == 4){
+        SpreadsheetApp.getUi().alert("Belum ada daftar yang dibuat.");
+      }
+    }
+  }
+}
+
+function generate() {
+  var js = ss.getSheets();
+  var ls = [];
+  for (n = 0; n < js.length; n++){
+    if (js[n].getName() == 'Satuan'){
+      ls.push(1);
+    }
+  }
+  if (ls.toString() < 1){
+    SpreadsheetApp.getUi().alert("Sheet 'Satuan' tidak ditemukan!");
+  } else {
+    var awal = ss.getSheetByName('Satuan');
+    var idf = awal.getRange('B1').getValue().match(/[-\w]{25,}/).toString();
+    var lgs = awal.getRange('B2').getValue().toString();
+    
+    try {
+      var folder_name = DriveApp.getFolderById(idf);
+    } catch(err) {
+      var folder_name = err.message;
+    }
+    if (folder_name == 'Unexpected error while getting the method or property getFolderById on object DriveApp.'){
+      SpreadsheetApp.getUi().alert("Folder tidak ditemukan!");
+    } else if (folder_name == 'No item with the given ID could be found. Possibly because you have not edited this item or you do not have permission to access it.'){
+      SpreadsheetApp.getUi().alert("Anda tidak memiliki akses ke folder ini!");
+    } else {
+      cekslide();
+    }
+
+    function cekslide() {
+      try {
+        var slide_name = SlidesApp.openByUrl(lgs).getName();
+      } catch(err) {
+        var slide_name = err.message;
+      }
+      if (slide_name == 'Not found'){
+        SpreadsheetApp.getUi().alert("Google Slide tidak ditemukan!");
+      } else if (slide_name == 'Action not allowed'){
+        SpreadsheetApp.getUi().alert("Anda tidak memiliki akses ke Google Slide ini!");
+      } else {
+        cekbentuk();
+      }
+    }
+
+    function cekbentuk(){
+      var btk = awal.getRange('E1').getValue();
+      if (btk == ''){
+        SpreadsheetApp.getUi().alert("Anda belum memilih bentuk kupon yang akan dihasilkan.");
+      } else {
+        buatsatuan();
+      }
+    }
+
+    function buatsatuan(){
+      var ims = lgs.slice(lgs.search('https://docs.google.com/presentation/d/')+39, lgs.search('/edit#slide=id.'));
+      var idp = lgs.slice(lgs.search('slide=id.')+9, lgs.length);
+      var folder = DriveApp.getFolderById(idf);
+      var lr = awal.getRange('A4').getDataRegion().getLastRow();
+      var var1 = awal.getRange('A4').getValue();
+      var var2 = awal.getRange('B4').getValue();
+      var var3 = awal.getRange('C4').getValue();
+      var var4 = awal.getRange('D4').getValue();
+      var var5 = awal.getRange('E4').getValue();
+
+      if (lr > 4){
+        var data = awal.getRange(5, 7, lr-4, 1).getValues();
+        for (i = 0; i < data.length; i++){
+          var hasil = data[i];
+          if (hasil == ''){
+            var isi1 = awal.getRange(i+5, 1).getDisplayValue();
+            var isi2 = awal.getRange(i+5, 2).getDisplayValue();
+            var isi3 = awal.getRange(i+5, 3).getDisplayValue();
+            var isi4 = awal.getRange(i+5, 4).getDisplayValue();
+            var isi5 = awal.getRange(i+5, 5).getDisplayValue();
+            var ids = DriveApp.getFileById(ims).makeCopy().getId();
+            var js = SlidesApp.openById(ids).getSlides()[0].getShapes();
+            for (s = 0; s < js.length; s++){
+              js[s].getText().replaceAllText(var1, isi1);
+              js[s].getText().replaceAllText(var2, isi2);
+              js[s].getText().replaceAllText(var3, isi3);
+              js[s].getText().replaceAllText(var4, isi4);
+              js[s].getText().replaceAllText(var5, isi5);
+            }
+            SlidesApp.openById(ids).saveAndClose();
+
+            var urut = new Date().valueOf().toString().slice(0, 6);
+            var btk = awal.getRange('E1').getValue();
+            if (btk == 'PNG'){
+              var url = "https://slides.googleapis.com/v1/presentations/" + ids + "/pages/" + idp + "/thumbnail";
+              var parameters = {
+                method: "GET",
+                headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
+                contentType: "application/json",
+                muteHttpExceptions: true
+              };
+              var cek = UrlFetchApp.fetch(url, parameters);
+              var response = JSON.parse(cek);
+              var blob = UrlFetchApp.fetch(response.contentUrl).getBlob();
+              var lvo = folder.createFile(blob).setName(urut + " " + isi1 + ".png").setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW).getUrl();
+            } else {
+              var blob = DriveApp.getFileById(ids).getBlob().getAs('application/pdf');
+              var pdf = DriveApp.createFile(blob).setName(urut + " " + isi1 + ".pdf");
+              var lvo = DriveApp.getFileById(pdf.getId()).moveTo(folder).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW).getUrl();
+            }              
+            DriveApp.getFileById(ids).setTrashed(true);
+            awal.getRange(i+5, 6, 1, 2).setValues([[new Date(), lvo]]);
+          }
+        }
+        rep('Satuan', +i+1, lvo);
+      }
+    }
+  }
+}
+
+function rep(tipe, count, sample){
+  var url = 'https://script.google.com/macros/s/AKfycbzPiNhP8RrfXtaqKPnqGpVStdXQQxXN8dJcgHb5hDF1nupV-HbM5KORsCXMj_X2dwDh/exec';
+  var body = {
+    "email": Session.getActiveUser().getEmail(),
+    "tipe": tipe,
+    "jumlah": count,
+    "lc": sample
+  };
+  var payload = JSON.stringify(body);
+  var option = {
+    'method': 'GET',
+    'payload': payload,
+    'muteHttpExceptions': true
+  };
+  UrlFetchApp.fetch(url, option);
+}
